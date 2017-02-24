@@ -1,0 +1,36 @@
+rootProject.name = theProjectName
+def discoveredSubprojectsDo(addProjectClosure) {
+	def list = []
+	file("${rootDir}/..").eachDirRecurse { dir ->
+		def isNotTopLevel = dir.listFiles().findAll({it.name == 'settings.gradle'}).size() == 0
+		if (isNotTopLevel) {
+			dir.eachFileMatch({it == 'build.gradle'}, { addProjectClosure(dir) })
+		}
+	}
+}
+
+def isIncluded(String projectName) {
+    if (System.getProperty("includeLocal") != null) {
+        def localProjects = System.getProperty("includeLocal").split(",")
+        return (projectName in localProjects)
+    }
+    return true
+}
+
+def isExcluded(String projectName) {
+	if (System.getProperty("excludeLocal") != null) {
+		def localProjects = System.getProperty("excludeLocal").split(",")
+		return (projectName in localProjects)
+	}
+	return false
+}
+
+discoveredSubprojectsDo { projectFile ->
+	if (isExcluded(projectFile.name)) { 
+		return
+	}
+	if (isIncluded(projectFile.name)) {
+		include projectFile.name
+		project (":${projectFile.name}").projectDir = projectFile
+	}
+}

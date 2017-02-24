@@ -1,0 +1,50 @@
+
+
+/*
+ * By default all projects found under the projects dir are considered internal.
+ * all projects that are excluded are picked up from a repository (eg: repoPath -- maven) 
+ * To include only some of these in a build,
+ * set the "includeLocal" system property on the gradle command line:
+ *
+ *   gradle -DincludeLocal=project1,project2 build
+ *
+ * To excluse some of these from a build,
+ * set the "excludeLocal" system property on the gradle command line:
+ *
+ *   gradle -DexcludeLocal=project1,project2 build
+ *
+ */
+
+//configure the plugteam repository path
+project.ext.set("localRepositoryPath", file('../repo').absolutePath)
+//configure the local gradle scripts path
+def scriptsPath = '../../fr.ensta-bretagne.gradle_scripts'
+
+//configure build path
+buildDir = file('../build').absolutePath
+subprojects { buildDir = rootProject.buildDir }
+
+//configure group and version 
+group = 'fr.ensta-bretagne'
+version = '0.0.1'
+subprojects {
+	group = rootProject.group
+	version = rootProject.version
+}
+
+//configure the online scripts URL
+def scriptsURL = 'http://mocs-artefacts.ensta-bretagne.fr/gradle'
+project.ext.set("gradleScriptsPath", gradle.startParameter.isOffline() ? scriptsPath : scriptsURL)
+
+apply from: "${gradleScriptsPath}/java.gradle"
+apply from: "${gradleScriptsPath}/dependencies.gradle"
+apply from: "${gradleScriptsPath}/eclipse.gradle"
+apply from: "${gradleScriptsPath}/idea.gradle"
+apply from: "${gradleScriptsPath}/publish.gradle"
+apply from: "${gradleScriptsPath}/substitute_dependencies.gradle"
+
+//generate all dependencies
+subprojects { task allDeps(type: DependencyReportTask) {} }
+
+
+

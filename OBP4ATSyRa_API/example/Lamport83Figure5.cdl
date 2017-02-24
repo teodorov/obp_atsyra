@@ -1,0 +1,91 @@
+/* Properties */
+
+/* Absence of deadlock */
+// property ddlfree is deadlockfree
+// en OBP, il n'y a pas de deadlock quand il n'y a pas d'états finaux
+
+/* Mutual exclusion */
+predicate AliceDogInYard is { {Alice}1@dogInYard }
+predicate BobCatInYard is { {Bob}1@catInYard }
+
+event evt_AliceDogInYard is { AliceDogInYard becomes true}
+event evt_BobCatInYard is { BobCatInYard becomes true}
+
+predicate mutualExclusion is { not (AliceDogInYard and BobCatInYard) }
+
+/* fairness */
+/* if pi sets flag[i], then it eventually enter CS */
+// on ne sait pas exprimer eventually, mais on sait restreindre le LTS
+// il restera ensuite à détecter les lasso-shaped counter examples (cf. Armin Biere, Livenes Checking as Safety Checking)
+restriction Fairness is {
+	start -- / / evt_flagA_is_up / -> upAlice;
+	start -- / / evt_flagB_is_up / -> upBob;
+	upAlice -- / / evt_AliceDogInYard / -> cut;
+	upBob -- / / evt_BobCatInYard / -> cut
+}
+
+/* idling */
+/* if process 0 does not set flag[0], then it will never enter CS */
+predicate flagA_is_down is { {sys}1:flags[0] = false }
+event evt_flagA_is_down is { flagA_is_down  becomes true}
+predicate flagA_is_up is { {sys}1:flags[0] = true }
+event evt_flagA_is_up is { flagA_is_up  becomes true}
+predicate flagB_is_down is { {sys}1:flags[1] = false } 
+event evt_flagB_is_down is { flagB_is_down becomes true}
+predicate flagB_is_up is { {sys}1:flags[1] = true } 
+event evt_flagB_is_up is { flagB_is_up becomes true}
+
+property AliceIdle is {
+	start -- / / evt_flagA_is_down / -> down;
+	down -- / / evt_flagA_is_up / -> start;
+	down -- / / evt_AliceDogInYard / -> reject
+}
+	
+property BobIdle is {
+	start -- / / evt_flagB_is_down / -> down;
+	down -- / / evt_flagB_is_up / -> start;
+	down -- / / evt_BobCatInYard / -> reject
+}
+	
+/* infoften */
+/* processes 0 enters CS infinitely often (not) */
+predicate OneInYard is {AliceDogInYard or BobCatInYard}
+event evt_OneInYard is { OneInYard becomes true }
+
+restriction infoften is {
+	start -- / / evt_OneInYard / -> cut
+}
+
+//--------------------------------------------- 
+//               CDL 
+//---------------------------------------------
+ 
+cdl lamport_safety is 
+{
+properties AliceIdle, BobIdle
+assert mutualExclusion
+
+	main is 
+	{
+		skip
+	}
+}
+
+cdl lamport_fairness is 
+{
+restrictions Fairness
+	main is 
+	{
+		skip
+	}
+}
+
+cdl lamport_infoften is
+{
+restrictions infoften // un mot-clé pour dire qu'on cherche les lasso-shaped counter example (acceptance cycle)
+
+	main is 
+	{
+		skip
+	}
+}

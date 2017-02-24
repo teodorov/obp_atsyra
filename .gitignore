@@ -1,0 +1,6 @@
+build
+devel/.gradle
+OBP4ATSyRa_API/bin
+**/*.obp
+**/*.tgf
+**/*.cc

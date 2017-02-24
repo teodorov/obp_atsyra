@@ -1,0 +1,165 @@
+/*****************************************************************
+  Lamport83Figure5.fcr
+
+  V. Ribaud, C. Teodorov
+  1 octobre 14
+*****************************************************************/
+
+/* Types */
+
+/* Constantes */
+
+const up: bool is true
+const down: bool is false
+
+
+/* Processes */
+   
+/*========================================================
+                        Alice 
+========================================================*/
+
+process Alice(&flagA : bool, &flagB : bool) is
+   states idle, waiting, dogInYard
+
+	init
+		to idle
+		
+	from idle
+		flagA := up ; 
+		/* idle->waiting */
+		to waiting
+
+	from waiting
+		if (flagB) then
+			/* waiting->waiting */
+			to waiting
+		else
+			/* waiting->dogInYard */
+			to dogInYard
+		end if
+
+	from dogInYard
+		select
+			/* dog stays in yard */
+			/* dogInYard->dogInYard */
+			to dogInYard
+		[]
+			/* dog comes back home */
+			flagA := down ;
+			/* dogInYard->idle */
+			to idle
+		end select
+		
+/*========================================================
+                        Bob 
+========================================================*/
+
+process Bob(&flagA : bool, &flagB : bool) is
+   states idle, checkFlagAlice, waiting, dogInYard
+
+	init
+		to idle
+		
+	from idle
+		flagB := up ; 
+		/* idle->checkFlagAlice */
+		to checkFlagAlice
+
+	from checkFlagAlice
+		if (flagA) then
+			flagB := down ; 
+			/* checkFlagAlice->waiting */
+			to waiting
+		else
+			/* checkFlagAlice->dogInYard */
+			to dogInYard
+		end if
+
+	from waiting
+		if (flagA) then
+			/* waiting->waiting */
+			to waiting
+		else
+			/* waiting->dogInYard */
+			flagB := up ; 
+			to checkFlagAlice
+/* Dans la première version de Bob (cf. ci-dessous),
+quand le flagA passe à down, on passe directement à dogInYard,
+alors que dans cette version, on repasse par checkFlagAlice.
+Mais est-ce que Alice peut avoir remis son flag up ? */
+		end if
+
+	from dogInYard
+		select
+			/* dog stays in yard */
+			/* dogInYard->dogInYard */
+			to dogInYard
+		[]
+			/* dog comes back home */
+			flagB := down ;
+			/* dogInYard->idle */
+			to idle
+		end select
+
+/*========================================================
+                        Première Version de Bob: sans doute fausse 
+========================================================*/
+
+process BobaVerifier(&flagA : bool, &flagB : bool) is
+   states idle, checkFlagAlice, waiting, dogInYard
+
+	init
+		to idle
+		
+	from idle
+		flagB := up ; 
+		to checkFlagAlice
+
+	from checkFlagAlice
+		if (flagA) then
+			flagB := down ; 
+			to waiting
+		else
+			flagB := up ; 
+			to dogInYard
+		end if
+
+	from waiting
+		if (flagA) then
+			to waiting
+		else
+			to dogInYard
+		end if
+
+	from dogInYard
+		select
+			/* dog stays in yard */
+			to dogInYard
+		[]
+			/* dog comes back home */
+			flagB := down ;
+			to idle
+		end select
+
+/* ========================================== */
+/* Main component */
+
+component Sys is
+var 
+   flagA : bool,
+   flagB : bool
+		
+init
+   flagA := down;
+   flagB := down
+	
+par
+      Alice (&flagA, &flagB)
+	|| Bob (&flagA, &flagB)
+//  || BobaVerifier (&flagA, &flagB)
+end
+
+	
+/* Entry point for verification */
+Sys

@@ -1,0 +1,10 @@
+dependencies {
+	compile files('../libs/OBP-1.5.1_batch/jars/OBP-1.5.1-batch.jar')
+}
+test {
+    outputs.upToDateWhen { false }
+}
+
+apply plugin: 'application'
+mainClassName = "obp.statespace.OBP4ATSyRa"
+

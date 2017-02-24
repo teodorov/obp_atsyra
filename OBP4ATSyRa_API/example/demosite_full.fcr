@@ -1,0 +1,248 @@
+process OriginalAttacksState is
+states s0
+var
+	position_of_alcapone 	: int	:= 0,
+	level_of_alcapone 		:int 	:= 1,
+	state_of_door1 			:int 	:= 0,
+	state_of_door2 			:int 	:= 0,
+	state_of_door3 			:int 	:= 0,
+	state_of_door4 			:int 	:= 0,
+	state_of_door5 			:int 	:= 0,
+	state_of_door6 			:int 	:= 0,
+	state_of_lockedDoor1 	:int	:= 2,
+	state_of_lockedDoor2 	:int	:= 2,
+	position_of_alarm1 		:int 	:= 1,
+	state_of_alarm1 		:int 	:= 1,
+	alarm1_triggered 		:int 	:= 0,
+	position_of_alarm2 		:int 	:= 1,
+	state_of_alarm2 		:int 	:= 1,
+	alarm2_triggered 		:int 	:= 0,
+	position_of_key 		:int 	:= 2,
+	position_of_document 	:int 	:= 4,
+	goalReached 			:int 	:= 0
+
+from s0
+	select
+		/*@go_from_Out_to_z1_by_door1*/
+		on (position_of_alcapone = 0 and state_of_door1 = 1);
+		position_of_alcapone := 1
+	[]
+		/*@go_from_z1_to_Out_by_door1*/			
+		on (position_of_alcapone = 1 and state_of_door1 = 1);
+		position_of_alcapone := 0
+	[]
+		/*@open_door1*/			
+		on (state_of_door1 = 0 and ( position_of_alcapone = 0 or position_of_alcapone = 1 ) and level_of_alcapone >= 0);
+		state_of_door1 := 1
+	[]
+		/*@close_door1*/			
+		on (state_of_door1 = 1 and ( position_of_alcapone = 0 or position_of_alcapone = 1 ) and level_of_alcapone >= 0);
+		state_of_door1 := 0
+	[]
+		/*@go_from_z1_to_z2_by_door2*/			
+		on (position_of_alcapone = 1 and state_of_door2 = 1);
+		position_of_alcapone := 2
+	[]
+		/*@go_from_z2_to_z1_by_door2*/			
+		on (position_of_alcapone = 2 and state_of_door2 = 1);
+		position_of_alcapone := 1
+	[]
+		/*@open_door2*/			
+		on (state_of_door2 = 0 and ( position_of_alcapone = 1 or position_of_alcapone = 2 ) and level_of_alcapone >= 0);
+		state_of_door2 := 1
+	[]
+		/*@close_door2*/			
+		on (state_of_door2 = 1 and ( position_of_alcapone = 1 or position_of_alcapone = 2 ) and level_of_alcapone >= 0);
+		state_of_door2 := 0
+	[]
+		/*@go_from_z1_to_z7_by_door3*/			
+		on (position_of_alcapone = 1 and state_of_door3 = 1);
+		position_of_alcapone := 7    ;
+		if (state_of_alarm1 = 1) then
+			alarm1_triggered := 1
+		end if
+	[]
+		/*@go_from_z7_to_z1_by_door3*/			
+		on (position_of_alcapone = 7 and state_of_door3 = 1);
+		position_of_alcapone := 1
+	[]
+		/*@open_door3*/			
+		on (state_of_door3 = 0 and ( position_of_alcapone = 1 or position_of_alcapone = 7 ) and level_of_alcapone >= 0);
+		state_of_door3 := 1    ;
+		if (state_of_alarm1 = 1) then
+			alarm1_triggered := 1      
+		end if
+	[]
+		/*@close_door3*/			
+		on (state_of_door3 = 1 and ( position_of_alcapone = 1 or position_of_alcapone = 7 ) and level_of_alcapone >= 0);
+		state_of_door3 := 0    ;
+		if (state_of_alarm1 = 1) then
+			alarm1_triggered := 1      
+		end if
+	[]
+		/*@go_from_z1_to_z8_by_door4*/			
+		on (position_of_alcapone = 1 and state_of_door4 = 1);
+		position_of_alcapone := 8    ;
+		if (state_of_alarm2 = 1) then
+			alarm2_triggered := 1    
+		end if
+	[]
+		/*@go_from_z8_to_z1_by_door4*/			
+		on (position_of_alcapone = 8 and state_of_door4 = 1);
+		position_of_alcapone := 1
+	[]
+		/*@open_door4*/			
+		on (state_of_door4 = 0 and ( position_of_alcapone = 1 or position_of_alcapone = 8 ) and level_of_alcapone >= 0);
+		state_of_door4 := 1    ;
+		if (state_of_alarm2 = 1) then
+			alarm2_triggered := 1      
+		end if
+	[]
+		/*@close_door4*/			
+		on (state_of_door4 = 1 and ( position_of_alcapone = 1 or position_of_alcapone = 8 ) and level_of_alcapone >= 0);
+		state_of_door4 := 0    ;
+		if (state_of_alarm2 = 1) then
+			alarm2_triggered := 1      
+		end if
+	[]
+		/*@go_from_z6_to_z5_by_door5*/			
+		on (position_of_alcapone = 6 and state_of_door5 = 1);
+		position_of_alcapone := 5
+	[]
+		/*@go_from_z5_to_z6_by_door5*/			
+		on (position_of_alcapone = 5 and state_of_door5 = 1);
+		position_of_alcapone := 6
+	[]
+		/*@open_door5*/			
+		on (state_of_door5 = 0 and ( position_of_alcapone = 6 or position_of_alcapone = 5 ) and level_of_alcapone >= 0);
+		state_of_door5 := 1
+	[]
+		/*@close_door5*/			
+		on (state_of_door5 = 1 and ( position_of_alcapone = 6 or position_of_alcapone = 5 ) and level_of_alcapone >= 0);
+		state_of_door5 := 0
+	[]
+		/*@go_from_z5_to_z4_by_door6*/			
+		on (position_of_alcapone = 5 and state_of_door6 = 1);
+		position_of_alcapone := 4
+	[]
+		/*@go_from_z4_to_z5_by_door6*/			
+		on (position_of_alcapone = 4 and state_of_door6 = 1);
+		position_of_alcapone := 5
+	[]
+		/*@open_door6*/			
+		on (state_of_door6 = 0 and ( position_of_alcapone = 5 or position_of_alcapone = 4 ) and level_of_alcapone >= 0);
+		state_of_door6 := 1
+	[]
+		/*@close_door6*/			
+		on (state_of_door6 = 1 and ( position_of_alcapone = 5 or position_of_alcapone = 4 ) and level_of_alcapone >= 0);
+		state_of_door6 := 0
+	[]
+		/*@go_from_z2_to_z3_by_lockedDoor1*/			
+		on (position_of_alcapone = 2 and state_of_lockedDoor1 = 1);
+		position_of_alcapone := 3
+	[]
+		/*@go_from_z3_to_z2_by_lockedDoor1*/			
+		on (position_of_alcapone = 3 and state_of_lockedDoor1 = 1);
+		position_of_alcapone := 2
+	[]
+		/*@open_lockedDoor1*/			
+		on (state_of_lockedDoor1 = 0 and ( position_of_alcapone = 2 or position_of_alcapone = 3 ) and level_of_alcapone >= 0);
+		state_of_lockedDoor1 := 1
+	[]
+		/*@close_lockedDoor1*/			
+		on (state_of_lockedDoor1 = 1 and ( position_of_alcapone = 2 or position_of_alcapone = 3 ) and level_of_alcapone >= 0);
+		state_of_lockedDoor1 := 0
+	[]
+		/*@unlock_lockedDoor1*/			
+		on (state_of_lockedDoor1 = 2 and position_of_key = 9 and ( position_of_alcapone = 2 or position_of_alcapone = 3 ) and level_of_alcapone >= 0);
+		state_of_lockedDoor1 := 0
+	[]
+		/*@lock_lockedDoor1*/			
+		on (state_of_lockedDoor1 = 0 and position_of_key = 9 and ( position_of_alcapone = 2 or position_of_alcapone = 3 ) and level_of_alcapone >= 0);
+		state_of_lockedDoor1 := 2
+	[]
+		/*@go_from_z3_to_z4_by_lockedDoor2*/			
+		on (position_of_alcapone = 3 and state_of_lockedDoor2 = 1);
+		position_of_alcapone := 4
+	[]
+		/*@go_from_z4_to_z3_by_lockedDoor2*/			
+		on (position_of_alcapone = 4 and state_of_lockedDoor2 = 1);
+		position_of_alcapone := 3
+	[]
+		/*@open_lockedDoor2*/			
+		on (state_of_lockedDoor2 = 0 and ( position_of_alcapone = 3 or position_of_alcapone = 4 ) and level_of_alcapone >= 0);
+		state_of_lockedDoor2 := 1
+	[]
+		/*@close_lockedDoor2*/			
+		on (state_of_lockedDoor2 = 1 and ( position_of_alcapone = 3 or position_of_alcapone = 4 ) and level_of_alcapone >= 0);
+		state_of_lockedDoor2 := 0
+	[]
+		/*@unlock_lockedDoor2*/			
+		on (state_of_lockedDoor2 = 2 and position_of_key = 9 and ( position_of_alcapone = 3 or position_of_alcapone = 4 ) and level_of_alcapone >= 0);
+		state_of_lockedDoor2 := 0
+	[]
+		/*@lock_lockedDoor2*/			
+		on (state_of_lockedDoor2 = 0 and position_of_key = 9 and ( position_of_alcapone = 3 or position_of_alcapone = 4 ) and level_of_alcapone >= 0);
+		state_of_lockedDoor2 := 2
+	[]
+		/*@go_from_z6_to_z7*/			
+		on (position_of_alcapone = 6);
+		position_of_alcapone := 7    ;
+		if (state_of_alarm1 = 1) then
+			alarm1_triggered := 1      
+		end if
+	[]
+		/*@go_from_z7_to_z6*/			
+		on (position_of_alcapone = 7);
+		position_of_alcapone := 6
+	[]
+		/*@go_from_z6_to_z8*/			
+		on (position_of_alcapone = 6);
+		position_of_alcapone := 8    ;
+		if (state_of_alarm2 = 1) then
+			alarm2_triggered := 1      
+		end if
+	[]
+		/*@go_from_z8_to_z6*/			
+		on (position_of_alcapone = 8);
+		position_of_alcapone := 6
+	[]
+		/*@deactivate_alarm1*/			
+		on (state_of_alarm1 = 1 and position_of_alcapone = position_of_alarm1 and level_of_alcapone >= 0);
+		state_of_alarm1 := 0
+	[]
+		/*@activate_alarm1*/			
+		on (state_of_alarm1 = 0 and position_of_alcapone = position_of_alarm1 and level_of_alcapone >= 0);
+				state_of_alarm1 := 1
+	[]
+		/*@deactivate_alarm2*/			
+		on (state_of_alarm2 = 1 and position_of_alcapone = position_of_alarm2 and level_of_alcapone >= 0);
+		state_of_alarm2 := 0
+	[]
+		/*@activate_alarm2*/			
+		on (state_of_alarm2 = 0 and position_of_alcapone = position_of_alarm2 and level_of_alcapone >= 0);
+		state_of_alarm2 := 1
+	[]
+		/*@take_key*/			
+		on (position_of_alcapone = position_of_key);
+		position_of_key := 9
+	[]
+		/*@drop_key*/			
+		on (position_of_key = 9);
+		position_of_key := position_of_alcapone
+	[]
+		/*@take_document*/			
+		on (position_of_alcapone = position_of_document);
+		position_of_document := 9
+	[]
+		/*@drop_document*/			
+		on (position_of_document = 9);
+		position_of_document := position_of_alcapone
+	[]
+		/*@reach_goal*/			
+		on (position_of_alcapone = 0 and position_of_document = 9 and alarm1_triggered = 0 and alarm2_triggered = 0);
+		goalReached := 1
+	end select;
+	to s0
+
+OriginalAttacksState

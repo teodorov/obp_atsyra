@@ -1,0 +1,49 @@
+type flags_t is array 2 of bool
+const alice : nat is 0
+const bob : nat is 1
+
+process Alice(&flags : flags_t) is
+states idle, waiting, dogInYard
+init
+	to idle
+from idle
+	flags[alice] := true;
+	to waiting
+from waiting
+	on (not flags[bob]);
+	to dogInYard
+from dogInYard
+	flags[alice] := false;
+	to idle
+
+process Bob(&flags : flags_t) is
+states idle, waiting, checkFlag, catInYard
+init
+	to idle
+from idle
+	flags[bob] := true;
+	to checkFlag
+from checkFlag
+	if flags[alice] then
+		flags[bob] := false;
+		to waiting
+	else
+		to catInYard
+	end if
+from waiting
+	on not flags[alice];
+	flags[bob] := true;
+	to catInYard
+
+from catInYard
+	flags[bob] := false;
+	to idle
+
+component sys is
+var
+	flags : flags_t
+par
+	Alice(&flags)
+||  Bob(&flags)
+end
+sys

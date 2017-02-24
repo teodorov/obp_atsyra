@@ -1,0 +1,32 @@
+predicate goalReached is {{OriginalAttacksState}1:goalReached = 1}
+restriction goal is {
+	start -- / goalReached / / -> cut
+}
+cdl ctx_goalReached is{
+	//Explored 15,233,280 states and 55,241,984 transitions in 253.937 seconds.
+	assert goalReached
+	main is {skip}
+}
+
+cdl ctx_cut_goalReached is{
+	//Explored 7,639,424 states and 27,620,992 transitions in 128.251 seconds.
+	restrictions goal 
+	main is {skip}
+}
+
+predicate goalReached1 is {
+	{OriginalAttacksState}1:position_of_alcapone = 0 and 
+	{OriginalAttacksState}1:position_of_document = 9 and 
+	{OriginalAttacksState}1:alarm1_triggered = 0 and 
+	{OriginalAttacksState}1:alarm2_triggered = 0
+}
+
+restriction goal1 is {
+	start -- / goalReached1 / / -> cut
+}
+
+cdl ctx_cut_goalReached1 is{
+	//Explored 7,430,592 states and 26,904,576 transitions in 125.322 seconds.
+	restrictions goal1 
+	main is {skip}
+}
