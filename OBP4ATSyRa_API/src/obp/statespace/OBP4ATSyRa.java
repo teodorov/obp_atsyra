@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.xid.basics.Basics;
@@ -204,6 +203,23 @@ public class OBP4ATSyRa {
 		return successors;
 	}
 	
+	void printTGF(ConfsFileHandler stateSpaceAPI, File filename) throws IOException {
+		BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
+		
+		for (int i = 0; i < stateSpaceAPI.getConfigurationCount(); i++) {
+			Configuration conf = stateSpaceAPI.getConfiguration(i);
+			writer.write(conf.id + "\n");
+		}
+		writer.write("#\n");
+		for (int i = 0; i < stateSpaceAPI.getConfigurationCount(); i++) {
+			Configuration conf = stateSpaceAPI.getConfiguration(i);
+			for (Action action : stateSpaceAPI.getActionsFrom(conf.id)) {
+				writer.write(conf.id + " " + action.targetId + "\n");
+			}
+		}
+		writer.close();	
+	}
+	
 	void printTGF(Map<Integer, Set<Integer>> graph, File filename) throws IOException {
 		BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
 		Set<Integer> vertices = new HashSet<>(graph.keySet());
@@ -255,6 +271,9 @@ public class OBP4ATSyRa {
 		
 		ConfsFileHandler stateSpaceAPI = tool.loadStateSpace(fcrResult.programQualifiedName, fcrResult.binPath, ccFile, stateSpaceFile);
 		
+		//print the TGF
+		tool.printTGF(stateSpaceAPI, new File("example/fullgraph.tgf"));
+		
 		List<Integer> resultConfigurations = tool.evaluatePredicate(stateSpaceAPI, predicateString);
 		System.out.println("The predicate '" + predicateString + "' is true in the following configurations: " + resultConfigurations);
 		
@@ -282,7 +301,7 @@ public class OBP4ATSyRa {
 		Map<Integer, Set<Integer>> subgraph = tool.subgraph(stateSpaceAPI, precondition, postcondition);
 		System.out.println(subgraph);
 		
-		File tgfFile = new File("example/LamportCorrect_280116.tgf");
+		File tgfFile = new File("example/subgraph.tgf");
 		tool.printTGF(subgraph, tgfFile);
 		
 	}
